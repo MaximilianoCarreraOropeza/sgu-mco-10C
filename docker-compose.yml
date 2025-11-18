@@ -19,11 +19,15 @@ services:
         API_HOST: localhost
         API_PORT: 8082
         API_BASE: /api
+        API_PROTOCOL: https
+        
     container_name: sgu-frontend
     ports:
-      - "3000:80"
+      - "3000:443"
     networks:
       - sgu-net
+    volumes:
+      - certbot-conf:/etc/letsencrypt:ro
     depends_on:
       - database
   backend:
@@ -37,11 +41,16 @@ services:
       DB_USER: root
       DB_PASS: root
       DB_NAME: sgu-mco
-      SERVER_PORT: 8080   
+      SERVER_PORT: 8080
+      SERVER_SSL_ENABLED: true
+      SERVER_SSL_KEYSTORE: /etc/letsencrypt/live/localhost/keystore.p12
+      SERVER_SSL_PASS: changeit  
     ports:
       - "8082:8080"
     networks:
       - sgu-net
+    volumes:
+      - certbot-conf:/etc/letsencrypt:ro
     depends_on:
       - frontend
 #docker network create --driver bridge sgu-net
@@ -53,7 +62,8 @@ networks:
 volumes:
   sgu-volume:
     external: true
-
+  certbot-conf:
+    external: true
 #docker compose up -d --build
 
 #docker compose down -v
